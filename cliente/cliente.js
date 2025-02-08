@@ -16,8 +16,8 @@ const clienteKey = cliente.generateKeys();
 // Criar agente HTTPS com suporte a TLS 1.2
 const httpsAgent = new https.Agent({
     rejectUnauthorized: false,
-    cert: fs.readFileSync(path.join(__dirname, 'cert.pem')), // Certificado do servidor
-    key: fs.readFileSync(path.join(__dirname, 'key.pem')), // Chave privada do servidor
+    cert: fs.readFileSync(path.join(__dirname, 'cert.pem')), // Certificado 
+    key: fs.readFileSync(path.join(__dirname, 'key.pem')), // Chave privada 
     ciphers: 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384',
     honorCipherOrder: true,
     minVersion: 'TLSv1.2'
