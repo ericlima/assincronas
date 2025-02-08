@@ -68,7 +68,7 @@ const sendEncryptedFile = async (clienteSecret) => {
             method: 'post',
             maxBodyLength: Infinity,
             httpsAgent: agent,
-            url: 'https://localhost:6000/enviar_ficheiro',
+            url: 'https://localhost:6000/receber_ficheiro',
             headers: { 
               ...data.getHeaders(),
               'x-client-secret': clienteSecret.toString('base64'),
