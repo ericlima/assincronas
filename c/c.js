@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
+const FormData = require('form-data');
 const crypto = require('crypto');
 const https = require('https');
 
@@ -14,7 +15,7 @@ const clienteKey = cliente.generateKeys();
 
 // Criar agente HTTPS com suporte a TLS 1.2
 const httpsAgent = new https.Agent({
-    rejectUnauthorized: false, 
+    rejectUnauthorized: false,
     cert: fs.readFileSync(path.join(__dirname, 'cert.pem')), // Certificado do servidor
     key: fs.readFileSync(path.join(__dirname, 'key.pem')), // Chave privada do servidor
     ciphers: 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384',
@@ -44,25 +45,44 @@ const encryptFile = async (inputPath, outputPath, secretKey) => {
     console.log('Arquivo criptografado:', outputPath);
 }
 
+
 // Função para enviar o arquivo ao servidor
 const sendEncryptedFile = async (clienteSecret) => {
     try {
         encryptFile(FILE_PATH, ENCRYPTED_FILE_PATH, clienteSecret);
 
         // Criar FormData e anexar o arquivo criptografado
-        const formData = new FormData();
-        formData.append('file', fs.createReadStream(ENCRYPTED_FILE_PATH));
+        let data = new FormData();
+        data.append('file', fs.createReadStream(ENCRYPTED_FILE_PATH));
 
-        // Enviar para o servidor via POST
-        const response = await axios.post('https://localhost:6000/enviar_ficheiro', 
-            formData, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
+        const agent = new https.Agent({
+            rejectUnauthorized: false,
+            cert: fs.readFileSync(path.join(__dirname, 'cert.pem')), // Certificado do servidor
+            key: fs.readFileSync(path.join(__dirname, 'key.pem')), // Chave privada do servidor
+            ciphers: 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384',
+            honorCipherOrder: true,
+            minVersion: 'TLSv1.2'
         });
 
+        let config = {
+            method: 'post',
+            maxBodyLength: Infinity,
+            httpsAgent: agent,
+            url: 'https://localhost:6000/enviar_ficheiro',
+            headers: { 
+              ...data.getHeaders(),
+              'x-client-secret': clienteSecret.toString('base64'),
+            },
+            data : data
+          };
+
+        // Enviar para o servidor via POST
+        const response = await axios.request(config);
+
         console.log('Resposta do servidor:', response.data);
+
+
+
     } catch (error) {
         console.error('Erro ao enviar o ficheiro:', error.message);
     }
@@ -70,7 +90,7 @@ const sendEncryptedFile = async (clienteSecret) => {
 
 (async () => {
     try {
-        const response = await axios.get('https://localhost:6000/hello',{
+        const response = await axios.get('https://localhost:6000/obtem_chave', {
             httpsAgent
         });
         const serverPublicKey = Buffer.from(response.data, 'base64');
