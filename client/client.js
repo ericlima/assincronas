@@ -81,8 +81,6 @@ const sendEncryptedFile = async (clienteSecret) => {
 
         console.log('Resposta do servidor:', response.data);
 
-
-
     } catch (error) {
         console.error('Erro ao enviar o ficheiro:', error.message);
     }
