@@ -58,10 +58,10 @@ app.get('/obtem_chave', async (req, res) => {
     console.log('Chamada para /obtem_chave');
     const servidor = crypto.createECDH('secp521r1');
     const servidorKey = servidor.generateKeys();
-    res.send(servidorKey.toString('base64'));;
+    res.send(servidorKey.toString('base64'));
 });
 
-app.post('/enviar_ficheiro', upload.single('file'), async (req, res) => {
+app.post('/receber_ficheiro', upload.single('file'), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'Nenhum ficheiro enviado.' });
     }
